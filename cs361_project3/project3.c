@@ -26,10 +26,11 @@ int main(int argc, char *argv[])
         printf("Usage: %s data_file\n", argv[0]);
         return 1;
     }
-    
-    // Try opening the file for reading, exit with appropriate error message
-    // if open fails
-      classification_fd = open(CLASSIFICATION_FILE, O_RDWR | O_CREAT, 0600); // Instead of opening this file here, you may elect to open it before the classifier loop in read/write mode
+
+    // Creates (on first iteration) then opens the file in read/write mode with read/write 
+    // owner permissions
+    classification_fd = open(CLASSIFICATION_FILE, O_RDWR | O_CREAT, 0600); 
+  
     input_fd = open(argv[1], O_RDONLY);
     if (input_fd < 0) {
         printf("Error opening file \"%s\" for reading: %s\n", argv[1], strerror(errno));
@@ -43,7 +44,9 @@ int main(int argc, char *argv[])
         assert(bytes_read == CLUSTER_SIZE);
         classification = TYPE_UNCLASSIFIED;
 
+        // stores the value of each cluster in 2 bytes
         uint16_t buf;
+      
         /*
             In this loop, you need to implement the functionality of the
             classifier. Each cluster needs to be examined using the functions
