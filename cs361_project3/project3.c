@@ -53,6 +53,7 @@ int main(int argc, char *argv[])
             provided in classify.c. Then for each cluster, the attributes
             need to be written to the classification file.
         */
+      
       if (has_jpg_header(&cluster_data[cluster_number])) {
         buf = 0x03;
         write(classification_fd, &buf, 1);
