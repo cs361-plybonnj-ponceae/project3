@@ -6,6 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
+#include <stdint.h>
 
 #include "common.h"
 #include "classify.h"
@@ -28,6 +29,7 @@ int main(int argc, char *argv[])
     
     // Try opening the file for reading, exit with appropriate error message
     // if open fails
+      classification_fd = open(CLASSIFICATION_FILE, O_RDWR | O_CREAT, 0600); // Instead of opening this file here, you may elect to open it before the classifier loop in read/write mode
     input_fd = open(argv[1], O_RDONLY);
     if (input_fd < 0) {
         printf("Error opening file \"%s\" for reading: %s\n", argv[1], strerror(errno));
@@ -40,16 +42,19 @@ int main(int argc, char *argv[])
     while ((bytes_read = read(input_fd, &cluster_data, CLUSTER_SIZE)) > 0) {
         assert(bytes_read == CLUSTER_SIZE);
         classification = TYPE_UNCLASSIFIED;
-        
+
+        uint16_t buf;
         /*
             In this loop, you need to implement the functionality of the
             classifier. Each cluster needs to be examined using the functions
             provided in classify.c. Then for each cluster, the attributes
             need to be written to the classification file.
         */
-        
-        printf("Processing cluster %06d\n", cluster_number); // This line needs to be removed in your final submission
-        
+      if (has_jpg_header(&cluster_data[cluster_number])) {
+        buf = 0x03;
+        write(classification_fd, &buf, 1);
+      }
+      
         cluster_number++;
     }
     
@@ -57,7 +62,6 @@ int main(int argc, char *argv[])
 
     // Try opening the classification file for reading, exit with appropriate
     // error message if open fails 
-    classification_fd = open(CLASSIFICATION_FILE, O_RDONLY); // Instead of opening this file here, you may elect to open it before the classifier loop in read/write mode
     if (classification_fd < 0) {
         printf("Error opening file \"%s\": %s\n", CLASSIFICATION_FILE, strerror(errno));
         return 1;
