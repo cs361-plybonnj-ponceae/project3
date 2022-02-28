@@ -52,8 +52,12 @@ int main(int argc, char *argv[])
             need to be written to the classification file.
         */
       
-
-      if (has_jpg_header(&cluster_data[cluster_number])) {
+      if (has_jpg_body(&cluster_data[cluster_number])) {
+        classification = TYPE_IS_JPG;
+      }
+      
+      if ((has_jpg_header(&cluster_data[cluster_number])
+        && has_jpg_body(&cluster_data[cluster_number]))) {
         classification = TYPE_IS_JPG + TYPE_JPG_HEADER;
       }
 
@@ -71,7 +75,7 @@ int main(int argc, char *argv[])
         cluster_number++;
     }
         
-   
+      }
     
     close(input_fd);
 
