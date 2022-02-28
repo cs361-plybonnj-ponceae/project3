@@ -26,9 +26,11 @@ int main(int argc, char *argv[])
         printf("Usage: %s data_file\n", argv[0]);
         return 1;
     }
-    
-    // Try opening the file for reading, exit with appropriate error message
-    // if open fails
+
+    // Creates (on first iteration) then opens the file in read/write mode with read/write 
+    // owner permissions
+    classification_fd = open(CLASSIFICATION_FILE, O_RDWR | O_CREAT, 0600); 
+  
     input_fd = open(argv[1], O_RDONLY);
     if (input_fd < 0) {
         printf("Error opening file \"%s\" for reading: %s\n", argv[1], strerror(errno));
@@ -41,7 +43,7 @@ int main(int argc, char *argv[])
     while ((bytes_read = read(input_fd, &cluster_data, CLUSTER_SIZE)) > 0) {
         assert(bytes_read == CLUSTER_SIZE);
         classification = TYPE_UNCLASSIFIED;
-        uint16_t buf;
+
       
         /*
             In this loop, you need to implement the functionality of the
@@ -50,11 +52,11 @@ int main(int argc, char *argv[])
             need to be written to the classification file.
         */
       
-    if (has_jpg_header(&cluster_data[cluster_number])) {
-        buf = 0x03;
-        write(classification_fd, &buf, 1);
-      }
 
+      if (has_jpg_header(&cluster_data[cluster_number])) {
+        classification = TYPE_IS_JPG + TYPE_JPG_HEADER;
+      }
+        write(classification_fd, &classification, 1);
         cluster_number++;
     }
         
@@ -64,7 +66,6 @@ int main(int argc, char *argv[])
 
     // Try opening the classification file for reading, exit with appropriate
     // error message if open fails 
-    classification_fd = open(CLASSIFICATION_FILE, O_RDONLY); // Instead of opening this file here, you may elect to open it before the classifier loop in read/write mode
     if (classification_fd < 0) {
         printf("Error opening file \"%s\": %s\n", CLASSIFICATION_FILE, strerror(errno));
         return 1;
