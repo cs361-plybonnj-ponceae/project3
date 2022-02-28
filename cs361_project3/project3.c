@@ -56,6 +56,17 @@ int main(int argc, char *argv[])
       if (has_jpg_header(&cluster_data[cluster_number])) {
         classification = TYPE_IS_JPG + TYPE_JPG_HEADER;
       }
+
+      if (has_jpg_body(&cluster_data[cluster_number])) {
+        classification = TYPE_IS_JPG;
+      }
+
+      if (has_jpg_footer(&cluster_data[cluster_number])) {
+        classification = TYPE_IS_JPG + TYPE_JPG_FOOTER;
+      }
+
+    
+
         write(classification_fd, &classification, 1);
         cluster_number++;
     }
