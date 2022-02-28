@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
         cluster_number++;
     }
         
-      }
+      
     
     close(input_fd);
 
@@ -98,4 +98,4 @@ int main(int argc, char *argv[])
     close(classification_fd);
 
     return 0;
-};
+}
