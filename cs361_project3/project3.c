@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     }
 
     // Creates and opens a classifcation file for writing to
-    classification_fd = open(CLASSIFICATION_FILE, O_RDWR | O_CREAT, 0600); 
+    classification_fd = open(CLASSIFICATION_FILE, O_RDWR | O_CREAT, 0600);  
 
     // Used to keep track of clusters in the while loops
     cluster_number = 0;
@@ -107,12 +107,19 @@ int main(int argc, char *argv[])
             && has_html_footer(cluster_data)) {
             classification = TYPE_IS_HTML | TYPE_HTML_HEADER | TYPE_HTML_FOOTER;
         } 
+
         // Single JPG contains both a header and a footer followed by zero bytes.
         // Set the file attribute to 0x07
         if (has_jpg_header(cluster_data) 
             && has_jpg_footer(cluster_data)) {
             classification = TYPE_IS_JPG | TYPE_JPG_HEADER | TYPE_JPG_FOOTER;
         } 
+
+        // Check if the current cluster is invalid
+        // and set the file attribute to 0x80
+        if (classification == TYPE_UNCLASSIFIED) {
+            classification = TYPE_UNKNOWN;
+        }
 
         // Writes the current clusters file attribute
         // to the classification file and move to the
@@ -122,34 +129,61 @@ int main(int argc, char *argv[])
     }
     
     close(input_fd);
-
-    // Creates and opens a map file for writing to
-    map_fd = open(MAP_FILE, O_RDWR | O_CREAT, 0600); 
-
-    // Try opening the classification file for reading, exit with appropriate
-    // error message if open fails 
+    
     if (classification_fd < 0) {
         printf("Error opening file \"%s\": %s\n", CLASSIFICATION_FILE, strerror(errno));
         return 1;
     }
 
-
-   
+    // Creates and opens a map file for writing to
+    map_fd = open(MAP_FILE, O_RDWR | O_CREAT, 0600); 
+    
+    // Reset classification offset in order to read from the beginning
+    lseek(classification_fd, 0, SEEK_SET);
+    
+    int jpg_offset = 1;
+    int html_offset = 1;
 
     // Iterate over each cluster, reading in the cluster type attributes
     while ((bytes_read = read(classification_fd, &cluster_type, 1)) > 0) {
-
+        
         /*
             In this loop, you need to implement the functionality of the
             mapper. For each cluster, a map entry needs to be created and
             written to the map file.
         */
-
-
-        //printf("%d\n", cluster_type);
-
-       
+        
+        switch (cluster_type) {
+            // unclassified
+            case 0:
+            break;
+            // jpg_header
+            case 3:
+            break;
+            // jpg_body
+            case 1:
+            break;
+            // jpg_footer
+            case 5:
+            break;
+            // html_header
+            case 24:
+            break;
+            // html body
+            case 8:
+            break;
+            // html footer
+            case 40:
+            break; 
+            // unknown
+            case 128:
+            break;
+        }
     }
     
+    // Resource cleanup on map and classification files
     close(classification_fd);
+    close(map_fd);
+    return 0;
+
 }
